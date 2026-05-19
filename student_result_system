@@ -1,0 +1,34 @@
+#!/bin/bash
+
+echo "Enter student name:"
+read name
+
+echo "Enter marks of Subject 1:"
+read m1
+
+echo "Enter marks of Subject 2:"
+read m2
+
+echo "Enter marks of Subject 3:"
+read m3
+
+total=$((m1 + m2 + m3))
+
+percentage=$((total / 3))
+
+echo "Total Marks: $total"
+
+echo "Percentage: $percentage%"
+
+if [ $percentage -ge 60 ]; then
+    echo "Result: First Class"
+
+elif [ $percentage -ge 50 ]; then
+    echo "Result: Second Class"
+
+elif [ $percentage -ge 40 ]; then
+    echo "Result: Pass Class"
+
+else
+    echo "Result: Fail"
+fi

@@ -1,0 +1,239 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+
+using namespace std;
+
+void fcfs(vector<int> req, int head)
+{
+    int seek = 0;
+
+    cout << "\nFCFS Order: " << head << " ";
+
+    for(int i = 0; i < req.size(); i++)
+    {
+        seek += abs(head - req[i]);
+
+        head = req[i];
+
+        cout << head << " ";
+    }
+
+    cout << "\nTotal Seek Time = " << seek << endl;
+}
+
+void sstf(vector<int> req, int head)
+{
+    int seek = 0;
+
+    vector<bool> visited(req.size(), false);
+
+    cout << "\nSSTF Order: " << head << " ";
+
+    for(int i = 0; i < req.size(); i++)
+    {
+        int idx = -1;
+
+        int mn = 1e9;
+
+        for(int j = 0; j < req.size(); j++)
+        {
+            if(!visited[j] &&
+               abs(head - req[j]) < mn)
+            {
+                mn = abs(head - req[j]);
+
+                idx = j;
+            }
+        }
+
+        visited[idx] = true;
+
+        seek += abs(head - req[idx]);
+
+        head = req[idx];
+
+        cout << head << " ";
+    }
+
+    cout << "\nTotal Seek Time = " << seek << endl;
+}
+
+void scan(vector<int> req,
+          int head,
+          int diskSize)
+{
+    int seek = 0;
+
+    vector<int> left, right;
+
+    for(int i = 0; i < req.size(); i++)
+    {
+        if(req[i] < head)
+            left.push_back(req[i]);
+        else
+            right.push_back(req[i]);
+    }
+
+    sort(left.begin(), left.end());
+
+    sort(right.begin(), right.end());
+
+    cout << "\nSCAN Order: " << head << " ";
+
+    for(int i = 0; i < right.size(); i++)
+    {
+        seek += abs(head - right[i]);
+
+        head = right[i];
+
+        cout << head << " ";
+    }
+
+    seek += abs(head - (diskSize - 1));
+
+    head = diskSize - 1;
+
+    cout << head << " ";
+
+    for(int i = left.size() - 1; i >= 0; i--)
+    {
+        seek += abs(head - left[i]);
+
+        head = left[i];
+
+        cout << head << " ";
+    }
+
+    cout << "\nTotal Seek Time = " << seek << endl;
+}
+
+void cscan(vector<int> req,
+           int head,
+           int diskSize)
+{
+    int seek = 0;
+
+    vector<int> left, right;
+
+    for(int i = 0; i < req.size(); i++)
+    {
+        if(req[i] < head)
+            left.push_back(req[i]);
+        else
+            right.push_back(req[i]);
+    }
+
+    sort(left.begin(), left.end());
+
+    sort(right.begin(), right.end());
+
+    cout << "\nC-SCAN Order: " << head << " ";
+
+    for(int i = 0; i < right.size(); i++)
+    {
+        seek += abs(head - right[i]);
+
+        head = right[i];
+
+        cout << head << " ";
+    }
+
+    seek += abs(head - (diskSize - 1));
+
+    head = diskSize - 1;
+
+    cout << head << " ";
+
+    seek += (diskSize - 1);
+
+    head = 0;
+
+    cout << head << " ";
+
+    for(int i = 0; i < left.size(); i++)
+    {
+        seek += abs(head - left[i]);
+
+        head = left[i];
+
+        cout << head << " ";
+    }
+
+    cout << "\nTotal Seek Time = " << seek << endl;
+}
+
+int main()
+{
+    int n, head, diskSize, choice;
+
+    vector<int> req;
+
+    cout << "Enter number of requests: ";
+
+    cin >> n;
+
+    cout << "Enter disk requests:\n";
+
+    for(int i = 0; i < n; i++)
+    {
+        int x;
+
+        cin >> x;
+
+        req.push_back(x);
+    }
+
+    cout << "Enter initial head position: ";
+
+    cin >> head;
+
+    cout << "Enter disk size: ";
+
+    cin >> diskSize;
+
+    do
+    {
+        cout << "\n--- Disk Scheduling Algorithms ---\n";
+
+        cout << "1. FCFS\n";
+        cout << "2. SSTF\n";
+        cout << "3. SCAN\n";
+        cout << "4. C-SCAN\n";
+        cout << "5. Exit\n";
+
+        cout << "Enter your choice: ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+                fcfs(req, head);
+                break;
+
+            case 2:
+                sstf(req, head);
+                break;
+
+            case 3:
+                scan(req, head, diskSize);
+                break;
+
+            case 4:
+                cscan(req, head, diskSize);
+                break;
+
+            case 5:
+                cout << "Exiting program...\n";
+                break;
+
+            default:
+                cout << "Invalid choice! Try again.\n";
+        }
+
+    } while(choice != 5);
+
+    return 0;
+}

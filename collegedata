@@ -1,0 +1,64 @@
+#!/bin/bash
+
+while true
+do
+    echo "------------------------------"
+    echo "        MENU OPTIONS          "
+    echo "------------------------------"
+
+    echo "1. Show Date"
+    echo "2. List Files"
+    echo "3. Show Disk Usage"
+    echo "4. Count Number of Lines in File"
+    echo "5. Display Lines containing 'VIT'"
+    echo "6. Exit"
+
+    echo -n "Enter your choice: "
+
+    read choice
+
+    case $choice in
+
+    1)
+        date
+        ;;
+
+    2)
+        ls
+        ;;
+
+    3)
+        df -h
+        ;;
+
+    4)
+        echo -n "Enter filename: "
+
+        read file
+
+        if [ -f "$file" ]; then
+            wc -l "$file"
+        else
+            echo "File not found"
+        fi
+        ;;
+
+    5)
+        if [ -f collegedata.txt ]; then
+            grep -n "VIT" collegedata.txt
+        else
+            echo "collegedata.txt file not found"
+        fi
+        ;;
+
+    6)
+        echo "Exiting..."
+        break
+        ;;
+
+    *)
+        echo "Invalid choice"
+        ;;
+    esac
+
+done

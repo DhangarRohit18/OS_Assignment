@@ -1,0 +1,29 @@
+#!/bin/bash
+
+min_length=9999
+
+smallest_file=""
+
+for file in *
+do
+    if [ -f "$file" ]; then
+
+        length=${#file}
+
+        if [ $length -lt $min_length ]; then
+
+            min_length=$length
+
+            smallest_file=$file
+        fi
+    fi
+done
+
+if [ -z "$smallest_file" ]; then
+    echo "No files found in current directory."
+
+else
+    echo "Smallest file name: $smallest_file"
+
+    echo "Length of file name: $min_length"
+fi

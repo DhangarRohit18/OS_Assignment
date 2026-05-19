@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <input_file>"
+
+    exit 1
+fi
+
+input_file=$1
+
+if [ ! -f "$input_file" ]; then
+    echo "File does not exist!"
+
+    exit 1
+fi
+
+> even
+> odd
+
+while read num
+do
+    if [ $((num % 2)) -eq 0 ]; then
+        echo "$num" >> even
+    else
+        echo "$num" >> odd
+    fi
+
+done < "$input_file"
+
+echo "Even numbers stored in file 'even'"
+
+echo "Odd numbers stored in file 'odd'"

@@ -1,0 +1,66 @@
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <semaphore.h>
+#include <unistd.h>
+
+using namespace std;
+
+#define N 5
+
+sem_t room;
+
+mutex chopstick[N];
+mutex printMutex;
+
+void philosopher(int id)
+{
+    sem_wait(&room);
+
+    chopstick[id].lock();
+
+    chopstick[(id + 1) % N].lock();
+
+    printMutex.lock();
+
+    cout << "Philosopher "
+         << id + 1
+         << " is eating"
+         << endl;
+
+    printMutex.unlock();
+
+    sleep(1);
+
+    chopstick[id].unlock();
+
+    chopstick[(id + 1) % N].unlock();
+
+    printMutex.lock();
+
+    cout << "Philosopher "
+         << id + 1
+         << " finished eating"
+         << endl;
+
+    printMutex.unlock();
+
+    sem_post(&room);
+}
+
+int main()
+{
+    thread ph[N];
+
+    sem_init(&room, 0, N - 1);
+
+    for(int i = 0; i < N; i++)
+        ph[i] = thread(philosopher, i);
+
+    for(int i = 0; i < N; i++)
+        ph[i].join();
+
+    sem_destroy(&room);
+
+    return 0;
+}

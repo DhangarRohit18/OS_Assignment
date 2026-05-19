@@ -1,0 +1,16 @@
+#!/bin/bash
+
+sum_even()
+{
+    n=$1
+    sum=$((n * (n + 1)))
+    echo "Sum of first $n even numbers is: $sum"
+}
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <n>"
+
+    exit 1
+fi
+
+sum_even $1
