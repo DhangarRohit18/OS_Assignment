@@ -1,0 +1,259 @@
+#include <iostream>
+
+using namespace std;
+
+// ---------------- FIRST FIT ----------------
+void firstFit(int blocks[],
+              int m,
+              int process[],
+              int n)
+{
+    int allocation[n];
+
+    // Initialize allocation
+    for(int i = 0; i < n; i++)
+    {
+        allocation[i] = -1;
+    }
+
+    // Allocate memory
+    for(int i = 0; i < n; i++)
+    {
+        for(int j = 0; j < m; j++)
+        {
+            if(blocks[j] >= process[i])
+            {
+                allocation[i] = j;
+
+                blocks[j] -= process[i];
+
+                break;
+            }
+        }
+    }
+
+    // Display result
+    cout << "\nFirst Fit Allocation:\n";
+
+    for(int i = 0; i < n; i++)
+    {
+        if(allocation[i] != -1)
+        {
+            cout << "P" << i + 1
+                 << " -> Block "
+                 << allocation[i] + 1
+                 << endl;
+        }
+        else
+        {
+            cout << "P" << i + 1
+                 << " -> Not Allocated\n";
+        }
+    }
+}
+
+// ---------------- BEST FIT ----------------
+void bestFit(int blocks[],
+             int m,
+             int process[],
+             int n)
+{
+    int allocation[n];
+
+    // Initialize allocation
+    for(int i = 0; i < n; i++)
+    {
+        allocation[i] = -1;
+    }
+
+    // Allocation Logic
+    for(int i = 0; i < n; i++)
+    {
+        int bestIdx = -1;
+
+        for(int j = 0; j < m; j++)
+        {
+            if(blocks[j] >= process[i])
+            {
+                if(bestIdx == -1 ||
+                   blocks[j] < blocks[bestIdx])
+                {
+                    bestIdx = j;
+                }
+            }
+        }
+
+        // Allocate block
+        if(bestIdx != -1)
+        {
+            allocation[i] = bestIdx;
+
+            blocks[bestIdx] -= process[i];
+        }
+    }
+
+    // Display result
+    cout << "\nBest Fit Allocation:\n";
+
+    for(int i = 0; i < n; i++)
+    {
+        if(allocation[i] != -1)
+        {
+            cout << "P" << i + 1
+                 << " -> Block "
+                 << allocation[i] + 1
+                 << endl;
+        }
+        else
+        {
+            cout << "P" << i + 1
+                 << " -> Not Allocated\n";
+        }
+    }
+}
+
+// ---------------- WORST FIT ----------------
+void worstFit(int blocks[],
+              int m,
+              int process[],
+              int n)
+{
+    int allocation[n];
+
+    // Initialize allocation
+    for(int i = 0; i < n; i++)
+    {
+        allocation[i] = -1;
+    }
+
+    // Allocation Logic
+    for(int i = 0; i < n; i++)
+    {
+        int worstIdx = -1;
+
+        for(int j = 0; j < m; j++)
+        {
+            if(blocks[j] >= process[i])
+            {
+                if(worstIdx == -1 ||
+                   blocks[j] > blocks[worstIdx])
+                {
+                    worstIdx = j;
+                }
+            }
+        }
+
+        // Allocate memory
+        if(worstIdx != -1)
+        {
+            allocation[i] = worstIdx;
+
+            blocks[worstIdx] -= process[i];
+        }
+    }
+
+    // Display result
+    cout << "\nWorst Fit Allocation:\n";
+
+    for(int i = 0; i < n; i++)
+    {
+        if(allocation[i] != -1)
+        {
+            cout << "P" << i + 1
+                 << " -> Block "
+                 << allocation[i] + 1
+                 << endl;
+        }
+        else
+        {
+            cout << "P" << i + 1
+                 << " -> Not Allocated\n";
+        }
+    }
+}
+
+// ---------------- MAIN ----------------
+int main()
+{
+    int m, n;
+
+    // Input number of memory blocks
+    cout << "Enter number of memory blocks: ";
+
+    cin >> m;
+
+    int originalBlocks[m];
+
+    // Input block sizes
+    cout << "Enter size of each block (in KB):\n";
+
+    for(int i = 0; i < m; i++)
+    {
+        cin >> originalBlocks[i];
+    }
+
+    // Input number of processes
+    cout << "Enter number of processes: ";
+
+    cin >> n;
+
+    int process[n];
+
+    // Input process sizes
+    cout << "Enter size of each process (in KB):\n";
+
+    for(int i = 0; i < n; i++)
+    {
+        cin >> process[i];
+    }
+
+    int choice;
+
+    do
+    {
+        // Copy original blocks
+        int blocks[m];
+
+        for(int i = 0; i < m; i++)
+        {
+            blocks[i] = originalBlocks[i];
+        }
+
+        // Menu
+        cout << "\n--- Menu ---\n";
+
+        cout << "1. First Fit\n";
+        cout << "2. Best Fit\n";
+        cout << "3. Worst Fit\n";
+        cout << "4. Exit\n";
+
+        cout << "Enter your choice: ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+                firstFit(blocks, m, process, n);
+                break;
+
+            case 2:
+                bestFit(blocks, m, process, n);
+                break;
+
+            case 3:
+                worstFit(blocks, m, process, n);
+                break;
+
+            case 4:
+                cout << "Exiting...\n";
+                break;
+
+            default:
+                cout << "Invalid choice!\n";
+        }
+
+    } while(choice != 4);
+
+    return 0;
+}

@@ -1,0 +1,146 @@
+#include <iostream>
+
+using namespace std;
+
+// ---------------- PAGING ----------------
+void paging()
+{
+    int logicalAddress;
+    int pageSize;
+    int pageNumber;
+    int offset;
+    int frameNumber;
+
+    cout << "\nPaging Technique\n";
+
+    // Input logical address
+    cout << "Enter logical address: ";
+
+    cin >> logicalAddress;
+
+    // Input page size
+    cout << "Enter page size: ";
+
+    cin >> pageSize;
+
+    // Calculate page number
+    pageNumber = logicalAddress / pageSize;
+
+    // Calculate offset
+    offset = logicalAddress % pageSize;
+
+    // Input frame number
+    cout << "Enter frame number for page "
+         << pageNumber
+         << ": ";
+
+    cin >> frameNumber;
+
+    // Calculate physical address
+    int physicalAddress =
+        frameNumber * pageSize + offset;
+
+    // Output
+    cout << "\nPage Number = "
+         << pageNumber
+         << endl;
+
+    cout << "Offset = "
+         << offset
+         << endl;
+
+    cout << "Physical Address = "
+         << physicalAddress
+         << endl;
+}
+
+// ---------------- SEGMENTATION ----------------
+void segmentation()
+{
+    int segmentNumber;
+    int offset;
+    int base;
+    int limit;
+
+    cout << "\nSegmentation Technique\n";
+
+    // Input segment number
+    cout << "Enter segment number: ";
+
+    cin >> segmentNumber;
+
+    // Input offset
+    cout << "Enter offset: ";
+
+    cin >> offset;
+
+    // Input base address
+    cout << "Enter base address of segment "
+         << segmentNumber
+         << ": ";
+
+    cin >> base;
+
+    // Input limit
+    cout << "Enter limit of segment "
+         << segmentNumber
+         << ": ";
+
+    cin >> limit;
+
+    // Check valid offset
+    if(offset < limit)
+    {
+        int physicalAddress =
+            base + offset;
+
+        cout << "Physical Address = "
+             << physicalAddress
+             << endl;
+    }
+    else
+    {
+        cout << "Invalid Offset! ";
+        cout << "Segmentation Fault\n";
+    }
+}
+
+// ---------------- MAIN ----------------
+int main()
+{
+    int choice;
+
+    do
+    {
+        cout << "\n--- Address Translation ---\n";
+
+        cout << "1. Paging\n";
+        cout << "2. Segmentation\n";
+        cout << "3. Exit\n";
+
+        cout << "Enter your choice: ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+                paging();
+                break;
+
+            case 2:
+                segmentation();
+                break;
+
+            case 3:
+                cout << "Exiting program...\n";
+                break;
+
+            default:
+                cout << "Invalid choice! Try again.\n";
+        }
+
+    } while(choice != 3);
+
+    return 0;
+}

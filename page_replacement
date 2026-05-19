@@ -1,0 +1,348 @@
+#include <iostream>
+
+using namespace std;
+
+#define MAX 50
+
+// Search page in frame
+int search(int frame[],
+           int n,
+           int key)
+{
+    for(int i = 0; i < n; i++)
+    {
+        if(frame[i] == key)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+// ---------------- FIFO ----------------
+void fifo(int pages[],
+          int n,
+          int capacity)
+{
+    int frame[MAX];
+
+    int front = 0;
+
+    int faults = 0;
+
+    // Initialize frames
+    for(int i = 0; i < capacity; i++)
+    {
+        frame[i] = -1;
+    }
+
+    cout << "\nFIFO Page Replacement:\n";
+
+    for(int i = 0; i < n; i++)
+    {
+        // Page fault
+        if(search(frame,
+                  capacity,
+                  pages[i]) == -1)
+        {
+            frame[front] = pages[i];
+
+            front = (front + 1)
+                    % capacity;
+
+            faults++;
+
+            cout << "Page "
+                 << pages[i]
+                 << " -> Fault\tFrames: ";
+        }
+        else
+        {
+            cout << "Page "
+                 << pages[i]
+                 << " -> Hit\tFrames: ";
+        }
+
+        // Display frames
+        for(int j = 0; j < capacity; j++)
+        {
+            if(frame[j] != -1)
+            {
+                cout << frame[j] << " ";
+            }
+            else
+            {
+                cout << "- ";
+            }
+        }
+
+        cout << endl;
+    }
+
+    cout << "Total Page Faults = "
+         << faults
+         << endl;
+}
+
+// ---------------- LRU ----------------
+void lru(int pages[],
+         int n,
+         int capacity)
+{
+    int frame[MAX];
+
+    int time[MAX];
+
+    int faults = 0;
+
+    int counter = 0;
+
+    // Initialize frames
+    for(int i = 0; i < capacity; i++)
+    {
+        frame[i] = -1;
+
+        time[i] = 0;
+    }
+
+    cout << "\nLRU Page Replacement:\n";
+
+    for(int i = 0; i < n; i++)
+    {
+        int pos = search(frame,
+                         capacity,
+                         pages[i]);
+
+        // Page fault
+        if(pos == -1)
+        {
+            int lruIndex = 0;
+
+            for(int j = 1;
+                j < capacity;
+                j++)
+            {
+                if(time[j]
+                   < time[lruIndex])
+                {
+                    lruIndex = j;
+                }
+            }
+
+            frame[lruIndex] = pages[i];
+
+            time[lruIndex] = ++counter;
+
+            faults++;
+
+            cout << "Page "
+                 << pages[i]
+                 << " -> Fault\tFrames: ";
+        }
+        else
+        {
+            // Update recent use
+            time[pos] = ++counter;
+
+            cout << "Page "
+                 << pages[i]
+                 << " -> Hit\tFrames: ";
+        }
+
+        // Display frames
+        for(int j = 0; j < capacity; j++)
+        {
+            if(frame[j] != -1)
+            {
+                cout << frame[j] << " ";
+            }
+            else
+            {
+                cout << "- ";
+            }
+        }
+
+        cout << endl;
+    }
+
+    cout << "Total Page Faults = "
+         << faults
+         << endl;
+}
+
+// ---------------- OPTIMAL ----------------
+void optimal(int pages[],
+             int n,
+             int capacity)
+{
+    int frame[MAX];
+
+    int faults = 0;
+
+    // Initialize frames
+    for(int i = 0; i < capacity; i++)
+    {
+        frame[i] = -1;
+    }
+
+    cout << "\nOptimal Page Replacement:\n";
+
+    for(int i = 0; i < n; i++)
+    {
+        // Page fault
+        if(search(frame,
+                  capacity,
+                  pages[i]) == -1)
+        {
+            int replace = -1;
+
+            int farthest = i + 1;
+
+            for(int j = 0;
+                j < capacity;
+                j++)
+            {
+                int k;
+
+                for(k = i + 1;
+                    k < n;
+                    k++)
+                {
+                    if(frame[j] == pages[k])
+                    {
+                        if(k > farthest)
+                        {
+                            farthest = k;
+
+                            replace = j;
+                        }
+
+                        break;
+                    }
+                }
+
+                // Never used again
+                if(k == n)
+                {
+                    replace = j;
+
+                    break;
+                }
+
+                if(replace == -1)
+                {
+                    replace = j;
+                }
+            }
+
+            frame[replace] = pages[i];
+
+            faults++;
+
+            cout << "Page "
+                 << pages[i]
+                 << " -> Fault\tFrames: ";
+        }
+        else
+        {
+            cout << "Page "
+                 << pages[i]
+                 << " -> Hit\tFrames: ";
+        }
+
+        // Display frames
+        for(int j = 0; j < capacity; j++)
+        {
+            if(frame[j] != -1)
+            {
+                cout << frame[j] << " ";
+            }
+            else
+            {
+                cout << "- ";
+            }
+        }
+
+        cout << endl;
+    }
+
+    cout << "Total Page Faults = "
+         << faults
+         << endl;
+}
+
+// ---------------- MAIN ----------------
+int main()
+{
+    int pages[MAX];
+
+    int n;
+
+    int capacity;
+
+    int choice;
+
+    // Input number of pages
+    cout << "Enter number of pages: ";
+
+    cin >> n;
+
+    // Input reference string
+    cout << "Enter page reference string:\n";
+
+    for(int i = 0; i < n; i++)
+    {
+        cin >> pages[i];
+    }
+
+    // Input frame capacity
+    cout << "Enter frame capacity: ";
+
+    cin >> capacity;
+
+    do
+    {
+        cout << "\n--- Page Replacement Algorithms ---\n";
+
+        cout << "1. FIFO\n";
+        cout << "2. LRU\n";
+        cout << "3. Optimal\n";
+        cout << "4. Exit\n";
+
+        cout << "Enter your choice: ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+                fifo(pages,
+                     n,
+                     capacity);
+                break;
+
+            case 2:
+                lru(pages,
+                    n,
+                    capacity);
+                break;
+
+            case 3:
+                optimal(pages,
+                        n,
+                        capacity);
+                break;
+
+            case 4:
+                cout << "Exiting program...\n";
+                break;
+
+            default:
+                cout << "Invalid choice! Try again.\n";
+        }
+
+    } while(choice != 4);
+
+    return 0;
+}

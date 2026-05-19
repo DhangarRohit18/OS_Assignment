@@ -61,6 +61,5 @@ int main()
         ph[i].join();
 
     sem_destroy(&room);
-
     return 0;
 }

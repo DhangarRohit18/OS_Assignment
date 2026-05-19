@@ -1,0 +1,454 @@
+#include <iostream> #include <fstream> #include <cstring> #include <string> #include <cstdlib> #include <ctime>
+ 
+using namespace std;
+
+
+/*	GLOBALS	*/
+
+
+char M[300][4];	// Memory
+char IR[4];	// Instruction Register
+char R[4];	// General Register
+int IC;	// Instruction Counter
+bool C;	// Toggle
+
+
+int SI, PI, TI;
+int PTR;	// Page Table Register
+int RA;	// Real Address
+int VA;	// Virtual Address
+
+
+bool used[30];	// Used frames
+
+
+ifstream fin("input.txt"); ofstream fout("output.txt");
+
+/*	PCB	*/
+
+
+struct PCB
+{
+int jobId; int TTL; int TLL; int TTC;
+ 
+int LLC;
+};
+
+
+PCB pcb;
+
+
+/*	UTILITIES	*/
+
+
+void init(); void LOAD();
+void STARTEXECUTION(); void EXECUTEUSERPROGRAM();
+void MOS();
+int ADDRESSMAP(int); int ALLOCATE();
+void READ(); void WRITE();
+void TERMINATE(int);
+
+
+/*	INITIALIZE	*/
+
+
+void init()
+{
+for(int i=0;i<300;i++) for(int j=0;j<4;j++)
+M[i][j]=' ';
+
+
+for(int i=0;i<30;i++) used[i]=false;
+ 
+for(int i=0;i<4;i++)
+{
+IR[i]=' ';
+R[i]=' ';
+}
+
+
+IC=0;
+C=false;
+
+
+SI=PI=TI=0; PTR=0;
+}
+
+
+/*	FRAME ALLOCATION	*/
+
+
+int ALLOCATE()
+{
+while(true)
+{
+int x=rand()%30; if(!used[x])
+{
+used[x]=true; return x;
+}
+}
+}
+
+
+/*	ADDRESS MAP	*/
+ 
+int ADDRESSMAP(int VA)
+{
+if(VA<0 || VA>=100)
+{
+PI=2;	// Operand Error return -1;
+}
+
+
+int PTE = PTR + (VA/10);
+
+
+if(M[PTE][0]=='*')
+{
+PI=3;	// Page Fault return -1;
+}
+
+
+int frame = (M[PTE][2]-'0')*10 + (M[PTE][3]-'0');
+
+
+return frame*10 + (VA%10);
+}
+
+
+/*	LOAD	*/
+
+
+void LOAD()
+{
+string line;
+
+
+while(getline(fin,line))
+ 
+{
+if(line.substr(0,4)=="$AMJ")
+{
+init();
+
+
+pcb.jobId = stoi(line.substr(4,4)); pcb.TTL	= stoi(line.substr(8,4)); pcb.TLL	= stoi(line.substr(12,4)); pcb.TTC	= 0;
+pcb.LLC	= 0;
+
+
+int frame = ALLOCATE(); PTR = frame*10;
+
+for(int i=0;i<10;i++) M[PTR+i][0]='*';
+
+int page=0;
+
+
+while(getline(fin,line))
+{
+if(line.substr(0,4)=="$DTA")
+{
+STARTEXECUTION();
+break;
+}
+
+
+if(line.substr(0,4)=="$END") break;
+ 
+int k=0; while(k<line.size())
+{
+int progFrame = ALLOCATE();
+
+
+M[PTR+page][0]='0';
+M[PTR+page][1]='0';
+M[PTR+page][2]=(progFrame/10)+'0'; M[PTR+page][3]=(progFrame%10)+'0';
+
+for(int i=progFrame*10;i<progFrame*10+10;i++)
+{
+for(int j=0;j<4;j++)
+{
+if(k<line.size()) M[i][j]=line[k++];
+else
+M[i][j]=' ';
+}
+}
+
+
+page++;
+}
+}
+}
+}
+}
+ 
+/*	START EXECUTION	*/
+
+
+void STARTEXECUTION()
+{
+IC=0; EXECUTEUSERPROGRAM();
+}
+
+
+/*	EXECUTE USER PROGRAM	*/
+
+
+void EXECUTEUSERPROGRAM()
+{
+while(true)
+{
+RA = ADDRESSMAP(IC);
+
+
+if(PI!=0)
+{
+MOS();
+return;
+}
+
+
+for(int i=0;i<4;i++) IR[i]=M[RA][i];
+
+IC++;
+
+
+if(IR[0]=='H')
+{
+ 
+SI=3; MOS();
+return;
+}
+
+
+if(IR[2]<'0'||IR[2]>'9'||IR[3]<'0'||IR[3]>'9')
+{
+PI=2; MOS();
+return;
+}
+
+
+VA=(IR[2]-'0')*10+(IR[3]-'0');
+
+
+string op=""; op+=IR[0]; op+=IR[1];
+
+if(op=="LR" || op=="SR" || op=="CR" || op=="GD" || op=="PD")
+{
+RA = ADDRESSMAP(VA); if(PI!=0)
+{
+MOS();
+return;
+}
+}
+else if(op=="BT")
+{
+ 
+// Valid opcode, no memory access needed
+}
+else
+{
+PI=1; MOS();
+return;
+}
+
+
+if(op=="LR")
+{
+for(int i=0;i<4;i++) R[i]=M[RA][i];
+}
+else if(op=="SR")
+{
+for(int i=0;i<4;i++) M[RA][i]=R[i];
+}
+else if(op=="CR")
+{
+C=true;
+for(int i=0;i<4;i++) if(R[i]!=M[RA][i]) C=false;
+}
+else if(op=="BT")
+{
+if(C) IC=VA;
+}
+ 
+else if(op=="GD")
+{
+SI=1; MOS();
+}
+else if(op=="PD")
+{
+SI=2; MOS();
+}
+else
+{
+PI=1; MOS();
+return;
+}
+
+
+pcb.TTC++;
+
+
+if(pcb.TTC>pcb.TTL)
+{
+TI=2; MOS();
+return;
+}
+}
+}
+
+
+/*	MOS	*/
+ 
+void MOS()
+{
+if(TI==0 && SI==1) READ();
+else if(TI==0 && SI==2) WRITE();
+else if(TI==0 && SI==3) TERMINATE(0);
+
+
+else if(TI==2 && SI==1) TERMINATE(3);
+else if(TI==2 && SI==2)
+{
+WRITE();
+TERMINATE(3);
+}
+else if(TI==2 && SI==3) TERMINATE(0);
+
+
+if(TI==0 && PI==1) TERMINATE(4);
+else if(TI==0 && PI==2) TERMINATE(5);
+
+
+else if(TI==0 && PI==3)
+{
+string op=""; op+=IR[0]; op+=IR[1];
+
+if(op=="GD" || op=="SR")
+{
+int frame = ALLOCATE(); int pte = PTR + VA/10;
+ 
+M[pte][0]='0';
+M[pte][1]='0';
+M[pte][2]=(frame/10)+'0';
+M[pte][3]=(frame%10)+'0';
+
+
+PI=0; IC--;
+EXECUTEUSERPROGRAM();
+}
+else
+TERMINATE(6);
+}
+
+
+else if(TI==2 && PI==1) TERMINATE(3); else if(TI==2 && PI==2) TERMINATE(3); else if(TI==2 && PI==3) TERMINATE(3);
+}
+
+
+/*	READ	*/
+
+
+void READ()
+{
+string line;
+
+
+if(!getline(fin,line))
+{
+TERMINATE(1);
+return;
+}
+ 
+if(line.substr(0,4)=="$END")
+{
+TERMINATE(1);
+return;
+}
+
+
+int k=0;
+for(int i=RA;i<RA+10;i++)
+{
+for(int j=0;j<4;j++)
+{
+if(k<line.size()) M[i][j]=line[k++];
+else
+M[i][j]=' ';
+}
+}
+
+
+SI=0;
+}
+
+
+/*	WRITE	*/
+
+
+void WRITE()
+{
+pcb.LLC++;
+
+
+if(pcb.LLC>pcb.TLL)
+ 
+{
+TERMINATE(2);
+return;
+}
+
+
+for(int i=RA;i<RA+10;i++) for(int j=0;j<4;j++)
+fout<<M[i][j];
+
+
+fout<<endl;
+
+
+SI=0;
+}
+
+
+/*	TERMINATE	*/
+
+
+void TERMINATE(int EM)
+{
+fout<<endl;
+
+
+switch(EM)
+{
+case 0: fout<<"NO ERROR"; break; case 1: fout<<"OUT OF DATA"; break;
+case 2: fout<<"LINE LIMIT EXCEEDED"; break; case 3: fout<<"TIME LIMIT EXCEEDED"; break; case 4: fout<<"OPERATION CODE ERROR"; break; case 5: fout<<"OPERAND ERROR"; break;
+case 6: fout<<"INVALID PAGE FAULT"; break;
+ 
+}
+
+
+fout<<endl;
+fout<<"IC="<<IC<<" TTC="<<pcb.TTC<<" LLC="<<pcb.LLC;
+fout<<endl<<endl;
+
+
+SI=PI=TI=0;
+}
+
+
+/*	MAIN	*/
+
+
+int main()
+{
+srand(time(0));
+
+
+LOAD();
+
+
+fin.close();
+fout.close();
+
+
+cout<<"MOS Phase 2 Execution Completed.\n"; return 0;
+}

@@ -1,0 +1,226 @@
+#include <iostream>
+#include <map>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+
+// Free memory list
+map<int, vector<int>> freeList;
+
+// Allocated blocks
+map<int, int> allocated;
+
+int totalMemory;
+
+// Find next power of 2
+int nextPowerOf2(int n)
+{
+    int k = 1;
+
+    while(k < n)
+    {
+        k *= 2;
+    }
+
+    return k;
+}
+
+// Initialize memory
+void initialize(int size)
+{
+    totalMemory = size;
+
+    freeList.clear();
+
+    allocated.clear();
+
+    freeList[size].push_back(0);
+}
+
+// Allocate memory
+void allocate(int size)
+{
+    // Required block size
+    int req = nextPowerOf2(size);
+
+    int blockSize = req;
+
+    // Find suitable block
+    while(blockSize <= totalMemory &&
+          freeList[blockSize].empty())
+    {
+        blockSize *= 2;
+    }
+
+    // Allocation failed
+    if(blockSize > totalMemory)
+    {
+        cout << "Allocation failed!\n";
+
+        return;
+    }
+
+    // Get free block address
+    int addr = freeList[blockSize].back();
+
+    freeList[blockSize].pop_back();
+
+    // Split blocks
+    while(blockSize > req)
+    {
+        blockSize /= 2;
+
+        freeList[blockSize]
+            .push_back(addr + blockSize);
+    }
+
+    // Store allocation
+    allocated[addr] = req;
+
+    cout << "Allocated at address "
+         << addr
+         << " with size "
+         << req
+         << endl;
+}
+
+// Deallocate memory
+void deallocate(int addr)
+{
+    // Invalid address
+    if(allocated.find(addr)
+       == allocated.end())
+    {
+        cout << "Invalid address!\n";
+
+        return;
+    }
+
+    // Get allocated size
+    int size = allocated[addr];
+
+    allocated.erase(addr);
+
+    // Merge buddies
+    while(size < totalMemory)
+    {
+        int buddy = addr ^ size;
+
+        auto &list = freeList[size];
+
+        auto it = find(list.begin(),
+                       list.end(),
+                       buddy);
+
+        // Buddy found
+        if(it != list.end())
+        {
+            list.erase(it);
+
+            addr = min(addr, buddy);
+
+            size *= 2;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    // Add back to free list
+    freeList[size].push_back(addr);
+
+    cout << "Deallocated successfully\n";
+}
+
+// Display free list
+void display()
+{
+    cout << "\nFree List:\n";
+
+    for(auto &p : freeList)
+    {
+        cout << "Block size "
+             << p.first
+             << " : ";
+
+        for(int addr : p.second)
+        {
+            cout << addr << " ";
+        }
+
+        cout << endl;
+    }
+}
+
+// Main function
+int main()
+{
+    int choice, memSize;
+
+    // Input total memory
+    cout << "Enter total memory (power of 2): ";
+
+    cin >> memSize;
+
+    initialize(memSize);
+
+    do
+    {
+        cout << "\n--- Buddy System Menu ---\n";
+
+        cout << "1. Allocate\n";
+        cout << "2. Deallocate\n";
+        cout << "3. Display\n";
+        cout << "4. Exit\n";
+
+        cout << "Enter choice: ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+            {
+                int size;
+
+                cout << "Enter process size: ";
+
+                cin >> size;
+
+                allocate(size);
+
+                break;
+            }
+
+            case 2:
+            {
+                int addr;
+
+                cout << "Enter address to free: ";
+
+                cin >> addr;
+
+                deallocate(addr);
+
+                break;
+            }
+
+            case 3:
+                display();
+                break;
+
+            case 4:
+                cout << "Exiting...\n";
+                break;
+
+            default:
+                cout << "Invalid choice!\n";
+        }
+
+    } while(choice != 4);
+
+    return 0;
+}
