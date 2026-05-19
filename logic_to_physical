@@ -2,7 +2,6 @@
 
 using namespace std;
 
-// ---------------- PAGING ----------------
 void paging()
 {
     int logicalAddress;
@@ -13,34 +12,34 @@ void paging()
 
     cout << "\nPaging Technique\n";
 
-    // Input logical address
+    
     cout << "Enter logical address: ";
 
     cin >> logicalAddress;
 
-    // Input page size
+    
     cout << "Enter page size: ";
 
     cin >> pageSize;
 
-    // Calculate page number
+    
     pageNumber = logicalAddress / pageSize;
 
-    // Calculate offset
+    
     offset = logicalAddress % pageSize;
 
-    // Input frame number
+    
     cout << "Enter frame number for page "
          << pageNumber
          << ": ";
 
     cin >> frameNumber;
 
-    // Calculate physical address
+    
     int physicalAddress =
         frameNumber * pageSize + offset;
 
-    // Output
+    
     cout << "\nPage Number = "
          << pageNumber
          << endl;
@@ -54,7 +53,6 @@ void paging()
          << endl;
 }
 
-// ---------------- SEGMENTATION ----------------
 void segmentation()
 {
     int segmentNumber;
@@ -64,31 +62,31 @@ void segmentation()
 
     cout << "\nSegmentation Technique\n";
 
-    // Input segment number
+    
     cout << "Enter segment number: ";
 
     cin >> segmentNumber;
 
-    // Input offset
+    
     cout << "Enter offset: ";
 
     cin >> offset;
 
-    // Input base address
+    
     cout << "Enter base address of segment "
          << segmentNumber
          << ": ";
 
     cin >> base;
 
-    // Input limit
+    
     cout << "Enter limit of segment "
          << segmentNumber
          << ": ";
 
     cin >> limit;
 
-    // Check valid offset
+    
     if(offset < limit)
     {
         int physicalAddress =
@@ -105,7 +103,6 @@ void segmentation()
     }
 }
 
-// ---------------- MAIN ----------------
 int main()
 {
     int choice;

@@ -4,7 +4,6 @@ using namespace std;
 
 #define MAX 50
 
-// Search page in frame
 int search(int frame[],
            int n,
            int key)
@@ -20,7 +19,6 @@ int search(int frame[],
     return -1;
 }
 
-// ---------------- FIFO ----------------
 void fifo(int pages[],
           int n,
           int capacity)
@@ -31,7 +29,7 @@ void fifo(int pages[],
 
     int faults = 0;
 
-    // Initialize frames
+    
     for(int i = 0; i < capacity; i++)
     {
         frame[i] = -1;
@@ -41,7 +39,7 @@ void fifo(int pages[],
 
     for(int i = 0; i < n; i++)
     {
-        // Page fault
+        
         if(search(frame,
                   capacity,
                   pages[i]) == -1)
@@ -64,7 +62,7 @@ void fifo(int pages[],
                  << " -> Hit\tFrames: ";
         }
 
-        // Display frames
+        
         for(int j = 0; j < capacity; j++)
         {
             if(frame[j] != -1)
@@ -85,7 +83,6 @@ void fifo(int pages[],
          << endl;
 }
 
-// ---------------- LRU ----------------
 void lru(int pages[],
          int n,
          int capacity)
@@ -98,7 +95,7 @@ void lru(int pages[],
 
     int counter = 0;
 
-    // Initialize frames
+    
     for(int i = 0; i < capacity; i++)
     {
         frame[i] = -1;
@@ -114,7 +111,7 @@ void lru(int pages[],
                          capacity,
                          pages[i]);
 
-        // Page fault
+        
         if(pos == -1)
         {
             int lruIndex = 0;
@@ -142,7 +139,7 @@ void lru(int pages[],
         }
         else
         {
-            // Update recent use
+            
             time[pos] = ++counter;
 
             cout << "Page "
@@ -150,7 +147,7 @@ void lru(int pages[],
                  << " -> Hit\tFrames: ";
         }
 
-        // Display frames
+        
         for(int j = 0; j < capacity; j++)
         {
             if(frame[j] != -1)
@@ -171,7 +168,6 @@ void lru(int pages[],
          << endl;
 }
 
-// ---------------- OPTIMAL ----------------
 void optimal(int pages[],
              int n,
              int capacity)
@@ -180,7 +176,7 @@ void optimal(int pages[],
 
     int faults = 0;
 
-    // Initialize frames
+    
     for(int i = 0; i < capacity; i++)
     {
         frame[i] = -1;
@@ -190,7 +186,7 @@ void optimal(int pages[],
 
     for(int i = 0; i < n; i++)
     {
-        // Page fault
+        
         if(search(frame,
                   capacity,
                   pages[i]) == -1)
@@ -222,7 +218,7 @@ void optimal(int pages[],
                     }
                 }
 
-                // Never used again
+                
                 if(k == n)
                 {
                     replace = j;
@@ -251,7 +247,7 @@ void optimal(int pages[],
                  << " -> Hit\tFrames: ";
         }
 
-        // Display frames
+        
         for(int j = 0; j < capacity; j++)
         {
             if(frame[j] != -1)
@@ -272,7 +268,6 @@ void optimal(int pages[],
          << endl;
 }
 
-// ---------------- MAIN ----------------
 int main()
 {
     int pages[MAX];
@@ -283,12 +278,12 @@ int main()
 
     int choice;
 
-    // Input number of pages
+    
     cout << "Enter number of pages: ";
 
     cin >> n;
 
-    // Input reference string
+    
     cout << "Enter page reference string:\n";
 
     for(int i = 0; i < n; i++)
@@ -296,7 +291,7 @@ int main()
         cin >> pages[i];
     }
 
-    // Input frame capacity
+    
     cout << "Enter frame capacity: ";
 
     cin >> capacity;

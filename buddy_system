@@ -6,15 +6,12 @@
 
 using namespace std;
 
-// Free memory list
 map<int, vector<int>> freeList;
 
-// Allocated blocks
 map<int, int> allocated;
 
 int totalMemory;
 
-// Find next power of 2
 int nextPowerOf2(int n)
 {
     int k = 1;
@@ -27,7 +24,6 @@ int nextPowerOf2(int n)
     return k;
 }
 
-// Initialize memory
 void initialize(int size)
 {
     totalMemory = size;
@@ -39,22 +35,21 @@ void initialize(int size)
     freeList[size].push_back(0);
 }
 
-// Allocate memory
 void allocate(int size)
 {
-    // Required block size
+    
     int req = nextPowerOf2(size);
 
     int blockSize = req;
 
-    // Find suitable block
+    
     while(blockSize <= totalMemory &&
           freeList[blockSize].empty())
     {
         blockSize *= 2;
     }
 
-    // Allocation failed
+    
     if(blockSize > totalMemory)
     {
         cout << "Allocation failed!\n";
@@ -62,12 +57,12 @@ void allocate(int size)
         return;
     }
 
-    // Get free block address
+    
     int addr = freeList[blockSize].back();
 
     freeList[blockSize].pop_back();
 
-    // Split blocks
+    
     while(blockSize > req)
     {
         blockSize /= 2;
@@ -76,7 +71,7 @@ void allocate(int size)
             .push_back(addr + blockSize);
     }
 
-    // Store allocation
+    
     allocated[addr] = req;
 
     cout << "Allocated at address "
@@ -86,10 +81,9 @@ void allocate(int size)
          << endl;
 }
 
-// Deallocate memory
 void deallocate(int addr)
 {
-    // Invalid address
+    
     if(allocated.find(addr)
        == allocated.end())
     {
@@ -98,12 +92,12 @@ void deallocate(int addr)
         return;
     }
 
-    // Get allocated size
+    
     int size = allocated[addr];
 
     allocated.erase(addr);
 
-    // Merge buddies
+    
     while(size < totalMemory)
     {
         int buddy = addr ^ size;
@@ -114,7 +108,7 @@ void deallocate(int addr)
                        list.end(),
                        buddy);
 
-        // Buddy found
+        
         if(it != list.end())
         {
             list.erase(it);
@@ -129,13 +123,12 @@ void deallocate(int addr)
         }
     }
 
-    // Add back to free list
+    
     freeList[size].push_back(addr);
 
     cout << "Deallocated successfully\n";
 }
 
-// Display free list
 void display()
 {
     cout << "\nFree List:\n";
@@ -155,12 +148,11 @@ void display()
     }
 }
 
-// Main function
 int main()
 {
     int choice, memSize;
 
-    // Input total memory
+    
     cout << "Enter total memory (power of 2): ";
 
     cin >> memSize;

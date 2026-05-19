@@ -2,7 +2,6 @@
 
 using namespace std;
 
-// ---------------- FIRST FIT ----------------
 void firstFit(int blocks[],
               int m,
               int process[],
@@ -10,13 +9,13 @@ void firstFit(int blocks[],
 {
     int allocation[n];
 
-    // Initialize allocation
+    
     for(int i = 0; i < n; i++)
     {
         allocation[i] = -1;
     }
 
-    // Allocate memory
+    
     for(int i = 0; i < n; i++)
     {
         for(int j = 0; j < m; j++)
@@ -32,7 +31,7 @@ void firstFit(int blocks[],
         }
     }
 
-    // Display result
+    
     cout << "\nFirst Fit Allocation:\n";
 
     for(int i = 0; i < n; i++)
@@ -52,7 +51,6 @@ void firstFit(int blocks[],
     }
 }
 
-// ---------------- BEST FIT ----------------
 void bestFit(int blocks[],
              int m,
              int process[],
@@ -60,13 +58,13 @@ void bestFit(int blocks[],
 {
     int allocation[n];
 
-    // Initialize allocation
+    
     for(int i = 0; i < n; i++)
     {
         allocation[i] = -1;
     }
 
-    // Allocation Logic
+    
     for(int i = 0; i < n; i++)
     {
         int bestIdx = -1;
@@ -83,7 +81,7 @@ void bestFit(int blocks[],
             }
         }
 
-        // Allocate block
+        
         if(bestIdx != -1)
         {
             allocation[i] = bestIdx;
@@ -92,7 +90,7 @@ void bestFit(int blocks[],
         }
     }
 
-    // Display result
+    
     cout << "\nBest Fit Allocation:\n";
 
     for(int i = 0; i < n; i++)
@@ -112,7 +110,6 @@ void bestFit(int blocks[],
     }
 }
 
-// ---------------- WORST FIT ----------------
 void worstFit(int blocks[],
               int m,
               int process[],
@@ -120,13 +117,13 @@ void worstFit(int blocks[],
 {
     int allocation[n];
 
-    // Initialize allocation
+    
     for(int i = 0; i < n; i++)
     {
         allocation[i] = -1;
     }
 
-    // Allocation Logic
+    
     for(int i = 0; i < n; i++)
     {
         int worstIdx = -1;
@@ -143,7 +140,7 @@ void worstFit(int blocks[],
             }
         }
 
-        // Allocate memory
+        
         if(worstIdx != -1)
         {
             allocation[i] = worstIdx;
@@ -152,7 +149,7 @@ void worstFit(int blocks[],
         }
     }
 
-    // Display result
+    
     cout << "\nWorst Fit Allocation:\n";
 
     for(int i = 0; i < n; i++)
@@ -172,19 +169,18 @@ void worstFit(int blocks[],
     }
 }
 
-// ---------------- MAIN ----------------
 int main()
 {
     int m, n;
 
-    // Input number of memory blocks
+    
     cout << "Enter number of memory blocks: ";
 
     cin >> m;
 
     int originalBlocks[m];
 
-    // Input block sizes
+    
     cout << "Enter size of each block (in KB):\n";
 
     for(int i = 0; i < m; i++)
@@ -192,14 +188,14 @@ int main()
         cin >> originalBlocks[i];
     }
 
-    // Input number of processes
+    
     cout << "Enter number of processes: ";
 
     cin >> n;
 
     int process[n];
 
-    // Input process sizes
+    
     cout << "Enter size of each process (in KB):\n";
 
     for(int i = 0; i < n; i++)
@@ -211,7 +207,7 @@ int main()
 
     do
     {
-        // Copy original blocks
+        
         int blocks[m];
 
         for(int i = 0; i < m; i++)
@@ -219,7 +215,7 @@ int main()
             blocks[i] = originalBlocks[i];
         }
 
-        // Menu
+        
         cout << "\n--- Menu ---\n";
 
         cout << "1. First Fit\n";

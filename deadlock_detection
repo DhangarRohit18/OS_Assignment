@@ -5,20 +5,20 @@ int main()
 {
     int n, m;
 
-    // Input number of processes
+    
     cout << "Enter number of processes: ";
     cin >> n;
 
-    // Input number of resources
+    
     cout << "Enter number of resources: ";
     cin >> m;
 
-    // Matrices
+    
     int allocation[n][m];
     int request[n][m];
     int available[m];
 
-    // Input Allocation Matrix
+    
     cout << "\nEnter Allocation Matrix:\n";
 
     for(int i = 0; i < n; i++)
@@ -29,7 +29,7 @@ int main()
         }
     }
 
-    // Input Request Matrix
+    
     cout << "\nEnter Request Matrix:\n";
 
     for(int i = 0; i < n; i++)
@@ -40,7 +40,7 @@ int main()
         }
     }
 
-    // Input Available Resources
+    
     cout << "\nEnter Available Resources:\n";
 
     for(int i = 0; i < m; i++)
@@ -48,7 +48,7 @@ int main()
         cin >> available[i];
     }
 
-    // Finish array
+    
     bool finish[n];
 
     for(int i = 0; i < n; i++)
@@ -56,7 +56,7 @@ int main()
         finish[i] = false;
     }
 
-    // Work array
+    
     int work[m];
 
     for(int i = 0; i < m; i++)
@@ -66,19 +66,19 @@ int main()
 
     bool found;
 
-    // Deadlock Detection Logic
+    
     do
     {
         found = false;
 
         for(int i = 0; i < n; i++)
         {
-            // Check unfinished process
+            
             if(!finish[i])
             {
                 bool possible = true;
 
-                // Check request <= work
+                
                 for(int j = 0; j < m; j++)
                 {
                     if(request[i][j] > work[j])
@@ -88,10 +88,10 @@ int main()
                     }
                 }
 
-                // Process can complete
+                
                 if(possible)
                 {
-                    // Release allocated resources
+                    
                     for(int j = 0; j < m; j++)
                     {
                         work[j] += allocation[i][j];
@@ -106,7 +106,7 @@ int main()
 
     } while(found);
 
-    // Check deadlock
+    
     bool deadlock = false;
 
     cout << "\nProcesses in Deadlock:\n";

@@ -12,46 +12,44 @@ mutex mtx;
 int readcount = 0;
 int sharedData = 0;
 
-// Reader Function
 void reader(int id)
 {
-    // Entry Section
+    
     mtx.lock();
 
     readcount++;
 
-    // First reader blocks writer
+    
     if(readcount == 1)
         sem_wait(&wrt);
 
     mtx.unlock();
 
-    // Critical Section
+    
     cout << "Reader " << id
          << " reads data = "
          << sharedData << endl;
 
     sleep(1);
 
-    // Exit Section
+    
     mtx.lock();
 
     readcount--;
 
-    // Last reader releases writer
+    
     if(readcount == 0)
         sem_post(&wrt);
 
     mtx.unlock();
 }
 
-// Writer Function
 void writer(int id)
 {
-    // Writer requests access
+    
     sem_wait(&wrt);
 
-    // Critical Section
+    
     sharedData++;
 
     cout << "Writer " << id
@@ -60,7 +58,7 @@ void writer(int id)
 
     sleep(1);
 
-    // Release access
+    
     sem_post(&wrt);
 }
 
@@ -68,26 +66,26 @@ int main()
 {
     thread r[5], w[2];
 
-    // Initialize semaphore
+    
     sem_init(&wrt, 0, 1);
 
-    // Create Reader Threads
+    
     for(int i = 0; i < 5; i++)
         r[i] = thread(reader, i + 1);
 
-    // Create Writer Threads
+    
     for(int i = 0; i < 2; i++)
         w[i] = thread(writer, i + 1);
 
-    // Join Reader Threads
+    
     for(int i = 0; i < 5; i++)
         r[i].join();
 
-    // Join Writer Threads
+    
     for(int i = 0; i < 2; i++)
         w[i].join();
 
-    // Destroy Semaphore
+    
     sem_destroy(&wrt);
 
     return 0;
