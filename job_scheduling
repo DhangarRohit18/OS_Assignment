@@ -1,0 +1,287 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<algorithm>
+using namespace std;
+
+struct Process{
+    int pid,at,bt,ct,tat,wt,priority,rt;
+    bool completed;
+};
+
+int main()
+{
+
+    while(true)
+    {
+
+        Process p[100];
+        int n;
+
+        cout<<"\nEnter number of processes: ";
+        cin>>n;
+
+        cout<<"\n1.FCFS\n2.SJF\n3.SRTF\n4.Priority\n5.Round Robin\n6.Exit\nEnter choice: ";
+        int choice;
+        cin>>choice;
+
+        if(choice==6)
+            break;
+
+        for(int i=0;i<n;i++)
+        {
+            cout<<"\nEnter PID: ";
+            cin>>p[i].pid;
+            cout<<"Enter AT: ";
+            cin>>p[i].at;
+            cout<<"Enter BT: ";
+            cin>>p[i].bt;
+            p[i].rt=p[i].bt;
+            p[i].completed=false;
+        }
+
+        int time=0,complete=0;
+        float totalTAT=0,totalWT=0;
+        vector<int> gantt;
+
+        if(choice==1)
+        {
+            sort(p,p+n,[](Process a,Process b){ return a.at<b.at; });
+
+            for(int i=0;i<n;i++)
+            {
+
+                while(time < p[i].at)
+                {
+                    gantt.push_back(0);
+                    time++;
+                }
+
+                for(int j=0;j<p[i].bt;j++)
+                    gantt.push_back(p[i].pid);
+
+                time+=p[i].bt;
+                p[i].ct=time;
+                p[i].tat=p[i].ct-p[i].at;
+                p[i].wt=p[i].tat-p[i].bt;
+            }
+        }
+
+        else if(choice==2)
+        {
+            while(complete<n)
+            {
+
+                int idx=-1,minBT=1e9;
+
+                for(int i=0;i<n;i++)
+                    if(p[i].at<=time && !p[i].completed && p[i].bt<minBT)
+                    {
+                        minBT=p[i].bt;
+                        idx=i;
+                    }
+
+                if(idx!=-1)
+                {
+                        for(int j=0;j<p[idx].bt;j++)
+                        gantt.push_back(p[idx].pid);
+
+                    time+=p[idx].bt;
+                    p[idx].ct=time;
+                    p[idx].tat=p[idx].ct-p[idx].at;
+                    p[idx].wt=p[idx].tat-p[idx].bt;
+                    p[idx].completed=true;
+                    complete++;
+                }
+                else
+                {
+                    gantt.push_back(0);
+                    time++;
+                }
+            }
+        }
+
+        else if(choice==3)
+        {
+            while(complete<n)
+            {
+
+                int idx=-1,minRT=1e9;
+
+                for(int i=0;i<n;i++)
+                    if(p[i].at<=time && p[i].rt>0 && p[i].rt<minRT)
+                    {
+                        minRT=p[i].rt;
+                        idx=i;
+                    }
+
+                if(idx!=-1)
+                {
+                    gantt.push_back(p[idx].pid);
+                    p[idx].rt--;
+                    time++;
+
+                    if(p[idx].rt==0){
+                        p[idx].ct=time;
+                        p[idx].tat=p[idx].ct-p[idx].at;
+                        p[idx].wt=p[idx].tat-p[idx].bt;
+                        complete++;
+                    }
+                }
+                else
+                {
+                    gantt.push_back(0);
+                    time++;
+                }
+            }
+        }
+
+        else if(choice==4)
+        {
+
+            for(int i=0;i<n;i++)
+            {
+                cout<<"Enter Priority for PID "<<p[i].pid<<": ";
+                cin>>p[i].priority;
+            }
+
+            while(complete<n)
+            {
+
+                int idx=-1,high=1e9;
+
+                for(int i=0;i<n;i++)
+                    if(p[i].at<=time && !p[i].completed && p[i].priority<high)
+                    {
+                        high=p[i].priority;
+                        idx=i;
+                    }
+
+                if(idx!=-1)
+                {
+
+                    for(int j=0;j<p[idx].bt;j++)
+                        gantt.push_back(p[idx].pid);
+
+                    time+=p[idx].bt;
+                    p[idx].ct=time;
+                    p[idx].tat=p[idx].ct-p[idx].at;
+                    p[idx].wt=p[idx].tat-p[idx].bt;
+                    p[idx].completed=true;
+                    complete++;
+                }
+                else
+                {
+                    gantt.push_back(0);
+                    time++;
+                }
+            }
+        }
+
+        else if(choice==5)
+        {
+
+            int tq;
+            cout<<"Enter Time Quantum: ";
+            cin>>tq;
+
+            queue<int> q;
+            bool inQ[100]={false};
+
+            while(complete<n)
+            {
+
+                for(int i=0;i<n;i++)
+                    if(p[i].at<=time && p[i].rt>0 && !inQ[i])
+                    {
+                        q.push(i);
+                        inQ[i]=true;
+                    }
+
+                if(q.empty())
+                {
+                    gantt.push_back(0);
+                    time++;
+                    continue;
+                }
+
+                int idx=q.front();
+                q.pop();
+
+                int run=min(tq,p[idx].rt);
+
+                for(int i=0;i<run;i++)
+                {
+                    gantt.push_back(p[idx].pid);
+                    time++;
+                }
+
+                p[idx].rt-=run;
+
+                for(int i=0;i<n;i++)
+                    if(p[i].at<=time && p[i].rt>0 && !inQ[i])
+                    {
+                        q.push(i);
+                        inQ[i]=true;
+                    }
+
+                if(p[idx].rt>0)
+                    q.push(idx);
+                else{
+                    p[idx].ct=time;
+                    p[idx].tat=p[idx].ct-p[idx].at;
+                    p[idx].wt=p[idx].tat-p[idx].bt;
+                    complete++;
+                }
+            }
+        }
+
+        cout<<"\nPID\tAT\tBT\tCT\tTAT\tWT\n";
+
+        for(int i=0;i<n;i++)
+        {
+            cout<<p[i].pid<<"\t"<<p[i].at<<"\t"<<p[i].bt<<"\t"
+                <<p[i].ct<<"\t"<<p[i].tat<<"\t"<<p[i].wt<<"\n";
+
+            totalTAT+=p[i].tat;
+            totalWT+=p[i].wt;
+        }
+
+        cout<<"\nAverage TAT: "<<totalTAT/n;
+        cout<<"\nAverage WT: "<<totalWT/n;
+
+        cout<<"\n\nGantt Chart:\n|";
+
+        int prev=gantt[0];
+
+        if(prev==0)
+            cout<<" Idle |";
+        else
+            cout<<" P"<<prev<<" |";
+
+        for(int i=1;i<gantt.size();i++)
+        {
+            if(gantt[i]!=prev)
+            {
+                if(gantt[i]==0)
+                    cout<<" Idle |";
+                else
+                    cout<<" P"<<gantt[i]<<" |";
+                prev=gantt[i];
+            }
+        }
+
+        cout<<"\n0";
+
+        for(int i=0;i<gantt.size();i++)
+        {
+            if(i==gantt.size()-1 || gantt[i]!=gantt[i+1])
+                cout<<"    "<<i+1;
+        }
+
+        cout<<"\n\n----------------------------------------\n";
+    }
+
+    cout<<"\nProgram Ended.\n";
+    return 0;
+}
