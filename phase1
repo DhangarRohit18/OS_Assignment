@@ -1,0 +1,250 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+// Virtual Machine
+char M[100][4];
+char IR[4];
+char R[4];
+int IC = 0;
+int C = 0;
+int SI = 0;
+bool job_aborted = false;
+
+FILE *infile, *outfile;
+
+// Function declarations
+void INIT();
+void LOAD();
+void STARTEXECUTION();
+void EXECUTEUSERPROGRAM();
+void MOS();
+void READ();
+void WRITE();
+void TERMINATE();
+int get_address();
+int get_block_address();
+
+int main() {
+    infile = fopen("input.txt", "r");
+    outfile = fopen("output.txt", "w");
+
+    if (infile == NULL || outfile == NULL) {
+        printf("Error opening files.\n");
+        return 1;
+    }
+
+    LOAD();
+
+    fclose(infile);
+    fclose(outfile);
+    return 0;
+}
+
+// Extract operand address
+int get_address() {
+    return (IR[2] - '0') * 10 + (IR[3] - '0');
+}
+
+// Align to block (for GD/PD)
+int get_block_address() {
+    int addr = get_address();
+    return (addr / 10) * 10;
+}
+
+// Initialize system
+void INIT() {
+    for (int i = 0; i < 100; i++)
+        for (int j = 0; j < 4; j++)
+            M[i][j] = ' ';
+
+    for (int i = 0; i < 4; i++) {
+        IR[i] = ' ';
+        R[i] = ' ';
+    }
+
+    IC = 0;
+    C = 0;
+    SI = 0;
+    job_aborted = false;
+}
+
+// MOS
+void MOS() {
+    switch (SI) {
+        case 1: READ(); break;
+        case 2: WRITE(); break;
+        case 3: TERMINATE(); break;
+    }
+}
+
+// READ
+void READ() {
+    char buffer[42];
+    int addr = get_block_address();
+
+    if (fgets(buffer, sizeof(buffer), infile) == NULL) {
+        fprintf(outfile, "Out of Data\n");
+        job_aborted = true;
+        return;
+    }
+
+    if (strncmp(buffer, "$END", 4) == 0) {
+        fprintf(outfile, "Out of Data\n");
+        job_aborted = true;
+        return;
+    }
+
+    int k = 0;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (buffer[k] != '\0' && buffer[k] != '\n')
+                M[addr + i][j] = buffer[k++];
+            else
+                M[addr + i][j] = ' ';
+        }
+    }
+}
+
+// WRITE
+void WRITE() {
+    char buffer[41];
+    int addr = get_block_address();
+    int k = 0;
+
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 4; j++) {
+            buffer[k++] = M[addr + i][j];
+        }
+    }
+
+    buffer[40] = '\0';
+    fprintf(outfile, "%s\n", buffer);
+}
+
+// TERMINATE
+void TERMINATE() {
+    fprintf(outfile, "\n\n");
+    job_aborted = true;
+}
+
+// Execution
+void EXECUTEUSERPROGRAM() {
+    while (!job_aborted) {
+
+        if (IC < 0 || IC > 99) {
+            fprintf(outfile, "IC Out of Bound\n");
+            break;
+        }
+
+        // Fetch
+        for (int i = 0; i < 4; i++)
+            IR[i] = M[IC][i];
+
+        IC = IC + 10;
+
+        int addr = get_address();
+
+        // Decode + Execute
+        if (IR[0] == 'L' && IR[1] == 'R') {
+            if (addr >= 0 && addr < 100)
+                for (int i = 0; i < 4; i++)
+                    R[i] = M[addr][i];
+        }
+
+        else if (IR[0] == 'S' && IR[1] == 'R') {
+            if (addr >= 0 && addr < 100)
+                for (int i = 0; i < 4; i++)
+                    M[addr][i] = R[i];
+        }
+
+        else if (IR[0] == 'C' && IR[1] == 'R') {
+            C = 1;
+            for (int i = 0; i < 4; i++) {
+                if (R[i] != M[addr][i]) {
+                    C = 0;
+                    break;
+                }
+            }
+        }
+
+        else if (IR[0] == 'B' && IR[1] == 'T') {
+            if (C == 1)
+                IC = addr * 10;
+        }
+
+        else if (IR[0] == 'G' && IR[1] == 'D') {
+            SI = 1;
+            MOS();
+        }
+
+        else if (IR[0] == 'P' && IR[1] == 'D') {
+            SI = 2;
+            MOS();
+        }
+
+        else if (IR[0] == 'H') {
+            SI = 3;
+            MOS();
+            break;
+        }
+
+        else {
+            fprintf(outfile, "Invalid Instruction\n");
+            job_aborted = true;
+        }
+    }
+}
+
+// Start execution
+void STARTEXECUTION() {
+    IC = 0;
+    EXECUTEUSERPROGRAM();
+}
+
+// LOAD
+void LOAD() {
+    char buffer[42];
+    int m = 0;
+    bool skip_job = false;
+
+    while (fgets(buffer, sizeof(buffer), infile) != NULL) {
+
+        if (strncmp(buffer, "$AMJ", 4) == 0) {
+            INIT();
+            m = 0;
+            skip_job = false;
+        }
+
+        else if (strncmp(buffer, "$DTA", 4) == 0) {
+            if (!skip_job)
+                STARTEXECUTION();
+        }
+
+        else if (strncmp(buffer, "$END", 4) == 0) {
+            continue;
+        }
+
+        else {
+            if (skip_job) continue;
+
+            if (m + 10 > 100) {
+                fprintf(outfile, "Memory Out of Bound\n");
+                skip_job = true;
+            } else {
+                int k = 0;
+                for (int i = 0; i < 10; i++) {
+                    for (int j = 0; j < 4; j++) {
+                        if (buffer[k] != '\0' && buffer[k] != '\n')
+                            M[m + i][j] = buffer[k++];
+                        else
+                            M[m + i][j] = ' ';
+                    }
+                }
+                m += 10;
+            }
+        }
+    }
+}
+
